@@ -56,12 +56,23 @@ else
     stl_demo_success=false
 fi
 
+# Run the access demo
+echo ""
+echo -e "${BLUE}--- Running u8scan_access_demo ---${NC}"
+if "$BUILD_DIR/bin/u8scan_access_demo"; then
+    echo -e "${GREEN}--- u8scan_access_demo completed successfully ---${NC}"
+    access_demo_success=true
+else
+    echo -e "${RED}--- u8scan_access_demo failed ---${NC}"
+    access_demo_success=false
+fi
+
 # Summary
 echo ""
 echo -e "${BLUE}Demo Summary:${NC}"
 echo "============="
 
-if $scanning_demo_success && $stl_demo_success; then
+if $scanning_demo_success && $stl_demo_success && $access_demo_success; then
     echo -e "${GREEN}✓ All demos completed successfully!${NC}"
     exit 0
 else

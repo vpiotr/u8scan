@@ -32,6 +32,7 @@ U8SCAN provides STL-friendly iterators, ranges, and utilities for processing UTF
 - **Character conversion**: `to_lower_ascii()` and `to_upper_ascii()` for ASCII character case conversion
 - **STL-like copy functions**: `copy()`, `copy_if()`, `copy_until()`, `copy_from()`, `copy_n()`, `copy_while()` for UTF-8 string filtering and processing
 - **String length calculation**: `length()` for counting Unicode code points (characters), not bytes
+- **String access functions**: `at()`, `empty()`, `front()`, `back()` for character-level string access with BOM handling
 - **High-performance scanning**: Custom character processing via `scan_utf8()` and `scan_ascii()`
 - **String utilities**: `quoted_str()` for safe quoting and escaping, `transform_chars()` for string transformation
 
@@ -78,6 +79,13 @@ int main() {
             return static_cast<char>(u8scan::to_upper_ascii(info));
         });
     std::cout << "Uppercase: " << upper_menu << std::endl;
+    
+    // Use new string access functions
+    std::cout << "String length: " << u8scan::length(menu_item) << " characters" << std::endl;
+    std::cout << "Is empty: " << (u8scan::empty(menu_item) ? "YES" : "NO") << std::endl;
+    std::cout << "First character: " << (char)u8scan::front(menu_item).codepoint << std::endl;   // 🍜 (emoji)
+    std::cout << "Last character: " << (char)u8scan::back(menu_item).codepoint << std::endl;    // 🌶️ (emoji)
+    std::cout << "Character at index 2: U+" << std::hex << u8scan::at(menu_item, 2).codepoint << std::endl; // 麻
     
     return 0;
 }

@@ -12,6 +12,7 @@
  * - High-performance transformation and filtering with `transform_chars()`
  * - STL-like copy functions: `copy()`, `copy_if()`, `copy_until()`, `copy_from()`, `copy_n()`, `copy_while()`
  * - String length calculation in Unicode code points with `length()`
+ * - String access functions: `at()`, `empty()`, `front()`, `back()` with BOM-aware character-level access
  * - Custom character processing via `scan_utf8()` and `scan_ascii()`
  * - Utility: `quoted_str()` for safe quoting/escaping of strings
  *
@@ -50,6 +51,16 @@
  *     return static_cast<char>(u8scan::to_lower_ascii(info));
  * });
  *
+ * // String access functions with BOM handling
+ * if (!u8scan::empty(input)) {
+ *     auto first_char = u8scan::front(input);      // Get first character
+ *     auto last_char = u8scan::back(input);        // Get last character
+ *     auto char_at_6 = u8scan::at(input, 6);       // Get character at index 6 (世)
+ *     std::cout << "First: " << static_cast<char>(first_char.codepoint) << std::endl;
+ *     std::cout << "Last: " << static_cast<char>(last_char.codepoint) << std::endl;
+ *     std::cout << "At 6: U+" << std::hex << char_at_6.codepoint << std::endl;
+ * }
+ *
  * // Quoting/escaping
  * std::string quoted = u8scan::quoted_str("A\"B世界", '"', '"', '\\');
  * // Result: "A\"B世界"
@@ -64,6 +75,7 @@
 #include <cstdint>
 #include <iterator>
 #include <algorithm>
+#include <stdexcept>
 
 namespace u8scan {
 
@@ -349,6 +361,22 @@ inline BOMInfo detect_bom(const std::string& input) {
 }
 
 } // namespace details
+
+/**
+ * @brief Returns the UTF-8 BOM (Byte Order Mark) string
+ * @return The UTF-8 BOM sequence as a string
+ * 
+ * This utility function provides a consistent way to get the UTF-8 BOM
+ * sequence for use in tests and string manipulation.
+ * 
+ * @example
+ * @code
+ * std::string text_with_bom = u8scan::bom_str() + "Hello World";
+ * @endcode
+ */
+inline std::string bom_str() {
+    return "\xEF\xBB\xBF";
+}
 
 /**
  * @brief Simplified and minimal UTF-8 scanner
@@ -650,6 +678,7 @@ inline OutputIt copy_while(const std::string& input, OutputIt result, Predicate 
  * 
  * In ASCII mode, each byte is counted as one character.
  * In UTF-8 mode with validation disabled, malformed sequences are counted optimistically.
+ * BOM is automatically detected and excluded from the count.
  * 
  * @code
  * std::string text = u8"Hello 世界! 🌍";
@@ -660,8 +689,152 @@ inline OutputIt copy_while(const std::string& input, OutputIt result, Predicate 
  * @endcode
  */
 inline std::size_t length(const std::string& input, bool utf8_mode = true, bool validate = true) {
-    auto range = make_char_range(input, utf8_mode, validate);
+    // Detect and skip BOM if present
+    BOMInfo bom_info = details::detect_bom(input);
+    std::size_t start_pos = bom_info.found ? 3 : 0;
+    
+    auto range = make_char_range(input, start_pos, input.length(), utf8_mode, validate);
     return range.size();
+}
+
+/**
+ * @brief Get character information at a specific index (character position, not byte position)
+ * @param input The UTF-8 string to access
+ * @param index The character index (0-based) to access
+ * @param utf8_mode Whether to use UTF-8 mode (true) or ASCII mode (false), defaults to true
+ * @param validate Whether to validate UTF-8 sequences, defaults to true
+ * @return CharInfo for the character at the specified index
+ * @throws std::out_of_range if index is beyond the string length in characters
+ * 
+ * This function provides character-level access to UTF-8 strings, similar to std::string::at()
+ * but operating on character indices rather than byte indices.
+ * 
+ * @code
+ * std::string text = u8"Hello 世界! 🌍";
+ * auto char_info = u8scan::at(text, 6);  // Gets the first Chinese character '世'
+ * assert(char_info.codepoint == 0x4E16);  // Unicode for '世'
+ * @endcode
+ */
+inline CharInfo at(const std::string& input, std::size_t index, bool utf8_mode = true, bool validate = true) {
+    // Detect and skip BOM if present
+    BOMInfo bom_info = details::detect_bom(input);
+    std::size_t start_pos = bom_info.found ? 3 : 0;
+    
+    auto range = make_char_range(input, start_pos, input.length(), utf8_mode, validate);
+    auto it = range.begin();
+    auto end_it = range.end();
+    
+    for (std::size_t i = 0; i < index && it != end_it; ++i, ++it) {
+        // Advance iterator to the desired position
+    }
+    
+    if (it == end_it) {
+        throw std::out_of_range("Index out of range");
+    }
+    
+    return *it;
+}
+
+/**
+ * @brief Check if string is empty (ignoring BOM if present)
+ * @param input The UTF-8 string to check
+ * @param utf8_mode Whether to use UTF-8 mode (true) or ASCII mode (false), defaults to true
+ * @param validate Whether to validate UTF-8 sequences, defaults to true
+ * @return true if the string contains no characters (excluding BOM), false otherwise
+ * 
+ * This function checks if a UTF-8 string is empty at the character level.
+ * A string containing only a BOM (Byte Order Mark) is considered empty.
+ * 
+ * @code
+ * std::string empty_str = "";
+ * std::string bom_only = "\xEF\xBB\xBF";  // UTF-8 BOM
+ * std::string with_content = u8"Hello";
+ * 
+ * assert(u8scan::empty(empty_str) == true);
+ * assert(u8scan::empty(bom_only) == true);   // BOM-only string is empty
+ * assert(u8scan::empty(with_content) == false);
+ * @endcode
+ */
+inline bool empty(const std::string& input, bool utf8_mode = true, bool validate = true) {
+    // Detect and skip BOM if present
+    BOMInfo bom_info = details::detect_bom(input);
+    std::size_t start_pos = bom_info.found ? 3 : 0;
+    
+    auto range = make_char_range(input, start_pos, input.length(), utf8_mode, validate);
+    return range.empty();
+}
+
+/**
+ * @brief Get the first character from a UTF-8 string
+ * @param input The UTF-8 string to access
+ * @param utf8_mode Whether to use UTF-8 mode (true) or ASCII mode (false), defaults to true
+ * @param validate Whether to validate UTF-8 sequences, defaults to true
+ * @return CharInfo for the first character in the string
+ * @throws std::out_of_range if the string is empty (excluding BOM)
+ * 
+ * This function returns the first character in a UTF-8 string, skipping any BOM if present.
+ * 
+ * @code
+ * std::string text = u8"Hello 世界! 🌍";
+ * auto first_char = u8scan::front(text);
+ * assert(first_char.codepoint == 'H');
+ * 
+ * std::string with_bom = u8"\xEF\xBB\xBFHello";  // UTF-8 BOM + Hello
+ * auto first_char_after_bom = u8scan::front(with_bom);
+ * assert(first_char_after_bom.codepoint == 'H');  // BOM is skipped
+ * @endcode
+ */
+inline CharInfo front(const std::string& input, bool utf8_mode = true, bool validate = true) {
+    // Detect and skip BOM if present
+    BOMInfo bom_info = details::detect_bom(input);
+    std::size_t start_pos = bom_info.found ? 3 : 0;
+    
+    auto range = make_char_range(input, start_pos, input.length(), utf8_mode, validate);
+    auto it = range.begin();
+    
+    if (it == range.end()) {
+        throw std::out_of_range("String is empty");
+    }
+    
+    return *it;
+}
+
+/**
+ * @brief Get the last character from a UTF-8 string
+ * @param input The UTF-8 string to access
+ * @param utf8_mode Whether to use UTF-8 mode (true) or ASCII mode (false), defaults to true
+ * @param validate Whether to validate UTF-8 sequences, defaults to true
+ * @return CharInfo for the last character in the string
+ * @throws std::out_of_range if the string is empty (excluding BOM)
+ * 
+ * This function returns the last character in a UTF-8 string.
+ * 
+ * @code
+ * std::string text = u8"Hello 世界! 🌍";
+ * auto last_char = u8scan::back(text);
+ * assert(last_char.codepoint == 0x1F30D);  // Unicode for 🌍
+ * @endcode
+ */
+inline CharInfo back(const std::string& input, bool utf8_mode = true, bool validate = true) {
+    // Detect and skip BOM if present
+    BOMInfo bom_info = details::detect_bom(input);
+    std::size_t start_pos = bom_info.found ? 3 : 0;
+    
+    auto range = make_char_range(input, start_pos, input.length(), utf8_mode, validate);
+    auto it = range.begin();
+    auto end_it = range.end();
+    
+    if (it == end_it) {
+        throw std::out_of_range("String is empty");
+    }
+    
+    CharInfo last_char;
+    while (it != end_it) {
+        last_char = *it;
+        ++it;
+    }
+    
+    return last_char;
 }
 
 /**
