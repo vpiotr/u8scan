@@ -370,7 +370,7 @@ UTEST_FUNC_DEF2(U8ScanAccess, LengthEdgeCases) {
 // Test comprehensive BOM handling for all access functions
 UTEST_FUNC_DEF2(U8ScanAccess, ComprehensiveBOMTests) {
     // Test data: BOM + mixed UTF-8 content
-    std::string bom_content = with_bom(std::string(u8"Hello 世界! 🌍"));
+    std::string bom_content = with_bom(u8"Hello 世界! 🌍");
     std::string no_bom_content = u8"Hello 世界! 🌍";
     
     // Test length() with and without BOM (should be same)
@@ -475,7 +475,7 @@ UTEST_FUNC_DEF2(U8ScanAccess, BOMEdgeCases) {
 // Test comprehensive string analysis with UTF-8 string (without BOM)
 UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisUTF8NoBOM) {
     // Using test string from UTF8StringLiterals
-    std::string input = skip_bom(std::string(u8"Hello 世界! 🌍"));
+    std::string input = skip_bom(u8"Hello 世界! 🌍");
     
     // Write input string to console
     std::cout << "\n=== String Analysis Test: UTF-8 without BOM ===" << std::endl;
@@ -528,8 +528,8 @@ UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisUTF8NoBOM) {
 
 // Test comprehensive string analysis with UTF-8 string (with BOM)
 UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisUTF8WithBOM) {
-    // Using test string from UTF8StringLiterals with BOM
-    std::string input = with_bom(std::string(u8"Hello 世界! 🌍"));
+    // Using test string with explicit UTF-8 bytes to ensure cross-platform consistency
+    std::string input = with_bom(u8"Hello 世界! 🌍");
     
     // Write input string to console
     std::cout << "\n=== String Analysis Test: UTF-8 with BOM ===" << std::endl;

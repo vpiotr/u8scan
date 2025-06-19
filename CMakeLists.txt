@@ -19,7 +19,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Compiler-specific options
 if(MSVC)
-    add_compile_options(/W4)
+    add_compile_options(/W4 /utf-8)
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
         add_compile_options(/experimental:external /external:W0)
     endif()
