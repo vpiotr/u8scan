@@ -9,6 +9,45 @@
 
 using namespace u8scan;
 
+// Helper function to print compact byte dump with positions
+void print_byte_dump(const std::string& input) {
+    std::cout << "\n--- Byte Dump ---" << std::endl;
+    
+    // Print position row
+    std::cout << "Pos: ";
+    for (size_t i = 0; i < input.size(); ++i) {
+        std::cout << std::setw(2) << std::setfill(' ') << i << " ";
+    }
+    std::cout << std::endl;
+    
+    // Print hex values row
+    std::cout << "Hex: ";
+    for (size_t i = 0; i < input.size(); ++i) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') 
+                  << (static_cast<unsigned char>(input[i]) & 0xFF) << std::dec << " ";
+    }
+    std::cout << std::endl;
+    
+    // Reset formatting to defaults
+    std::cout << std::setfill(' ') << std::setw(0);
+}
+
+// Helper function to add BOM only if not present
+std::string with_bom(const std::string& input) {
+    if (has_bom(input)) {
+        return input;  // BOM already present
+    }
+    return bom_str() + input;
+}
+
+// Helper function to remove BOM if present
+std::string skip_bom(const std::string& input) {
+    if (has_bom(input)) {
+        return input.substr(3);  // Skip the 3-byte BOM
+    }
+    return input;
+}
+
 // Test at() function with ASCII string
 UTEST_FUNC_DEF2(U8ScanAccess, AtFunctionASCII) {
     std::string input = "Hello World";
@@ -63,7 +102,7 @@ UTEST_FUNC_DEF2(U8ScanAccess, AtFunctionUTF8) {
 
 // Test at() function with BOM
 UTEST_FUNC_DEF2(U8ScanAccess, AtFunctionWithBOM) {
-    std::string input = bom_str() + std::string("Hello");  // UTF-8 BOM + Hello
+    std::string input = with_bom(std::string("Hello"));  // UTF-8 BOM + Hello
     
     // First accessible character should be 'H', not BOM
     auto first_char = at(input, 0);
@@ -86,7 +125,7 @@ UTEST_FUNC_DEF2(U8ScanAccess, EmptyFunction) {
     UTEST_ASSERT_FALSE(empty(non_empty));
     
     // Test BOM + content (should not be empty)
-    std::string bom_with_content = bom_str() + std::string("Hello");
+    std::string bom_with_content = with_bom(std::string("Hello"));
     UTEST_ASSERT_FALSE(empty(bom_with_content));
     
     // Test UTF-8 content
@@ -110,7 +149,7 @@ UTEST_FUNC_DEF2(U8ScanAccess, FrontFunction) {
     UTEST_ASSERT_EQUALS(3u, front_utf8.byte_count);
     
     // Test with BOM
-    std::string bom_string = bom_str() + std::string("Hello");
+    std::string bom_string = with_bom(std::string("Hello"));
     auto front_after_bom = front(bom_string);
     UTEST_ASSERT_EQUALS('H', static_cast<char>(front_after_bom.codepoint));
     
@@ -162,7 +201,7 @@ UTEST_FUNC_DEF2(U8ScanAccess, BackFunction) {
     UTEST_ASSERT_EQUALS('A', static_cast<char>(single_back.codepoint));
     
     // Test with BOM
-    std::string bom_string = bom_str() + std::string("Hello");
+    std::string bom_string = with_bom(std::string("Hello"));
     auto back_after_bom = back(bom_string);
     UTEST_ASSERT_EQUALS('o', static_cast<char>(back_after_bom.codepoint));
     
@@ -250,15 +289,15 @@ UTEST_FUNC_DEF2(U8ScanAccess, LengthWithBOM) {
     UTEST_ASSERT_EQUALS(0u, length(bom_only));
     
     // Test BOM + ASCII content
-    std::string bom_ascii = bom_str() + std::string("Hello");
+    std::string bom_ascii = with_bom(std::string("Hello"));
     UTEST_ASSERT_EQUALS(5u, length(bom_ascii));  // BOM should be excluded
     
     // Test BOM + UTF-8 content
-    std::string bom_utf8 = bom_str() + std::string(u8"世界");
+    std::string bom_utf8 = with_bom(std::string(u8"世界"));
     UTEST_ASSERT_EQUALS(2u, length(bom_utf8));  // BOM should be excluded
     
     // Test BOM + mixed content
-    std::string bom_mixed = bom_str() + std::string(u8"Hello 世界!");
+    std::string bom_mixed = with_bom(std::string(u8"Hello 世界!"));
     UTEST_ASSERT_EQUALS(9u, length(bom_mixed));  // BOM should be excluded
     
     // Compare with same content without BOM
@@ -283,7 +322,7 @@ UTEST_FUNC_DEF2(U8ScanAccess, LengthASCIIMode) {
     UTEST_ASSERT_EQUALS(4u, length(emoji_str, false)); // ASCII mode: 4 bytes
     
     // Test BOM + UTF-8 in ASCII mode
-    std::string bom_utf8 = bom_str() + std::string(u8"世界");
+    std::string bom_utf8 = with_bom(std::string(u8"世界"));
     UTEST_ASSERT_EQUALS(2u, length(bom_utf8, true));  // UTF-8 mode: BOM excluded, 2 chars
     UTEST_ASSERT_EQUALS(6u, length(bom_utf8, false)); // ASCII mode: BOM excluded, 6 bytes
 }
@@ -331,7 +370,7 @@ UTEST_FUNC_DEF2(U8ScanAccess, LengthEdgeCases) {
 // Test comprehensive BOM handling for all access functions
 UTEST_FUNC_DEF2(U8ScanAccess, ComprehensiveBOMTests) {
     // Test data: BOM + mixed UTF-8 content
-    std::string bom_content = bom_str() + std::string(u8"Hello 世界! 🌍");
+    std::string bom_content = with_bom(std::string(u8"Hello 世界! 🌍"));
     std::string no_bom_content = u8"Hello 世界! 🌍";
     
     // Test length() with and without BOM (should be same)
@@ -408,9 +447,9 @@ UTEST_FUNC_DEF2(U8ScanAccess, BOMEdgeCases) {
     UTEST_ASSERT_TRUE(at_exception_empty);
     
     // Test different types of single characters with BOM
-    std::string bom_ascii = bom_str() + std::string("A");
-    std::string bom_chinese = bom_str() + std::string(u8"世");
-    std::string bom_emoji = bom_str() + std::string(u8"🌍");
+    std::string bom_ascii = with_bom(std::string("A"));
+    std::string bom_chinese = with_bom(std::string(u8"世"));
+    std::string bom_emoji = with_bom(std::string(u8"🌍"));
     
     // All should have length 1
     UTEST_ASSERT_EQUALS(1u, length(bom_ascii));
@@ -436,7 +475,7 @@ UTEST_FUNC_DEF2(U8ScanAccess, BOMEdgeCases) {
 // Test comprehensive string analysis with UTF-8 string (without BOM)
 UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisUTF8NoBOM) {
     // Using test string from UTF8StringLiterals
-    std::string input = u8"Hello 世界! 🌍";
+    std::string input = skip_bom(std::string(u8"Hello 世界! 🌍"));
     
     // Write input string to console
     std::cout << "\n=== String Analysis Test: UTF-8 without BOM ===" << std::endl;
@@ -447,6 +486,9 @@ UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisUTF8NoBOM) {
     std::cout << "Number of bytes: " << input.size() << std::endl;
     std::cout << "Length (characters): " << length(input) << std::endl;
     std::cout << "Contains BOM: " << (has_bom(input) ? "yes" : "no") << std::endl;
+    
+    // Write compact byte dump
+    print_byte_dump(input);
     
     // Write character table
     std::cout << "\n--- Character Analysis ---" << std::endl;
@@ -487,7 +529,7 @@ UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisUTF8NoBOM) {
 // Test comprehensive string analysis with UTF-8 string (with BOM)
 UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisUTF8WithBOM) {
     // Using test string from UTF8StringLiterals with BOM
-    std::string input = bom_str() + std::string(u8"Hello 世界! 🌍");
+    std::string input = with_bom(std::string(u8"Hello 世界! 🌍"));
     
     // Write input string to console
     std::cout << "\n=== String Analysis Test: UTF-8 with BOM ===" << std::endl;
@@ -498,6 +540,9 @@ UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisUTF8WithBOM) {
     std::cout << "Number of bytes: " << input.size() << std::endl;
     std::cout << "Length (characters): " << length(input) << std::endl;
     std::cout << "Contains BOM: " << (has_bom(input) ? "yes" : "no") << std::endl;
+    
+    // Write compact byte dump
+    print_byte_dump(input);
     
     // Write character table
     std::cout << "\n--- Character Analysis ---" << std::endl;
@@ -552,6 +597,9 @@ UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisASCIIOnly) {
     std::cout << "Number of bytes: " << input.size() << std::endl;
     std::cout << "Length (characters): " << length(input) << std::endl;
     std::cout << "Contains BOM: " << (has_bom(input) ? "yes" : "no") << std::endl;
+    
+    // Write compact byte dump
+    print_byte_dump(input);
     
     // Write character table
     std::cout << "\n--- Character Analysis ---" << std::endl;
