@@ -10,7 +10,7 @@
  * - Character property predicates (is_ascii, is_digit_ascii, is_alpha_ascii, is_lowercase_ascii, is_uppercase_ascii, etc.)
  * - Character conversion functions (to_lower_ascii, to_upper_ascii) for ASCII characters
  * - High-performance transformation and filtering with `transform_chars()`
- * - STL-like copy functions: `copy()`, `copy_if()`, `copy_until()`, `copy_from()`
+ * - STL-like copy functions: `copy()`, `copy_if()`, `copy_until()`, `copy_from()`, `copy_n()`, `copy_while()`
  * - Custom character processing via `scan_utf8()` and `scan_ascii()`
  * - Utility: `quoted_str()` for safe quoting/escaping of strings
  *

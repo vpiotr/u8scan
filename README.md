@@ -30,6 +30,7 @@ U8SCAN provides STL-friendly iterators, ranges, and utilities for processing UTF
 - **UTF-8 and ASCII scanning**: Efficient character-by-character processing with BOM detection
 - **Character property predicates**: `is_ascii()`, `is_digit_ascii()`, `is_alpha_ascii()`, `is_lowercase_ascii()`, `is_uppercase_ascii()`, `is_whitespace_ascii()`, `is_emoji()`
 - **Character conversion**: `to_lower_ascii()` and `to_upper_ascii()` for ASCII character case conversion
+- **STL-like copy functions**: `copy()`, `copy_if()`, `copy_until()`, `copy_from()`, `copy_n()`, `copy_while()` for UTF-8 string filtering and processing
 - **High-performance scanning**: Custom character processing via `scan_utf8()` and `scan_ascii()`
 - **String utilities**: `quoted_str()` for safe quoting and escaping, `transform_chars()` for string transformation
 
@@ -66,6 +67,12 @@ int main() {
     // String quoting and escaping
     std::string quoted = u8scan::quoted_str("A\"B世界", '"', '"', '\\');
     std::cout << "Quoted: " << quoted << std::endl; // "A\"B世界"
+    
+    // Copy functions for UTF-8 string filtering
+    std::string digits_only;
+    u8scan::copy_if(input, std::back_inserter(digits_only), 
+                    u8scan::predicates::is_digit_ascii());
+    std::cout << "Digits only: " << digits_only << std::endl; // "123"
     
     return 0;
 }
@@ -462,6 +469,94 @@ Converts ASCII character to uppercase:
 uint32_t to_upper_ascii(const CharInfo& info);
 ```
 
+### STL-like Copy Functions
+
+U8SCAN provides STL-compatible copy functions that work directly with UTF-8 strings:
+
+#### `copy(input, output_iter)`
+
+Copies all characters from a UTF-8 string:
+
+```cpp
+template<typename OutputIt>
+OutputIt copy(const std::string& input, OutputIt result);
+```
+
+#### `copy_if(input, output_iter, predicate)`
+
+Copies characters that match a predicate:
+
+```cpp
+template<typename OutputIt, typename Predicate>
+OutputIt copy_if(const std::string& input, OutputIt result, Predicate pred);
+
+// Example: Copy only ASCII letters
+std::string input = "Hello123世界!";
+std::string letters;
+u8scan::copy_if(input, std::back_inserter(letters), u8scan::predicates::is_alpha_ascii());
+// Result: "Hello"
+```
+
+#### `copy_until(input, output_iter, predicate)`
+
+Copies characters until a predicate matches:
+
+```cpp
+template<typename OutputIt, typename Predicate>
+OutputIt copy_until(const std::string& input, OutputIt result, Predicate pred);
+
+// Example: Copy until hitting a digit
+std::string input = "Hello123世界";
+std::string result;
+u8scan::copy_until(input, std::back_inserter(result), u8scan::predicates::is_digit_ascii());
+// Result: "Hello"
+```
+
+#### `copy_from(input, output_iter, predicate)`
+
+Copies characters starting from when a predicate first matches:
+
+```cpp
+template<typename OutputIt, typename Predicate>
+OutputIt copy_from(const std::string& input, OutputIt result, Predicate pred);
+
+// Example: Copy from first digit onwards
+std::string input = "Hello123世界";
+std::string result;
+u8scan::copy_from(input, std::back_inserter(result), u8scan::predicates::is_digit_ascii());
+// Result: "123世界"
+```
+
+#### `copy_n(input, output_iter, n)`
+
+Copies the first N Unicode characters:
+
+```cpp
+template<typename OutputIt>
+OutputIt copy_n(const std::string& input, OutputIt result, size_t n);
+
+// Example: Copy first 3 characters (Unicode-aware)
+std::string input = "Hello世界";
+std::string result;
+u8scan::copy_n(input, std::back_inserter(result), 3);
+// Result: "Hel" (3 Unicode characters, not bytes)
+```
+
+#### `copy_while(input, output_iter, predicate)`
+
+Copies characters while a predicate continues to match:
+
+```cpp
+template<typename OutputIt, typename Predicate>
+OutputIt copy_while(const std::string& input, OutputIt result, Predicate pred);
+
+// Example: Copy while characters are digits
+std::string input = "123Hello";
+std::string result;
+u8scan::copy_while(input, std::back_inserter(result), u8scan::predicates::is_digit_ascii());
+// Result: "123"
+```
+
 ### STL Integration
 
 #### `CharIterator`
@@ -528,6 +623,8 @@ cd build && ctest
 # Or run directly
 ./build/bin/u8scan_scanning_test
 ./build/bin/u8scan_stl_test
+./build/bin/u8scan_copy_test
+./build/bin/u8scan_emoji_test
 ```
 
 ### Running Demos
@@ -580,7 +677,9 @@ u8scan/
 │       └── u8scan.h            # Main header file
 ├── tests/
 │   ├── u8scan_scanning_test.cpp # Scanning functionality tests
-│   └── u8scan_stl_test.cpp      # STL integration tests
+│   ├── u8scan_stl_test.cpp      # STL integration tests
+│   ├── u8scan_copy_test.cpp     # Copy functions tests
+│   └── u8scan_emoji_test.cpp    # Emoji detection tests
 ├── demos/
 │   ├── u8scan_scanning_demo.cpp # Basic scanning examples
 │   ├── u8scan_stl_demo.cpp      # STL algorithm examples
