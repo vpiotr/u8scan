@@ -104,7 +104,7 @@ void demo_empty_strings() {
     // Test front() and back() with empty string
     std::cout << "  front() test: ";
     try {
-        auto first = front(empty_str);
+        front(empty_str);
         std::cout << "Got character (unexpected)" << std::endl;
     } catch (const std::out_of_range& e) {
         std::cout << "Correctly threw exception: " << e.what() << std::endl;
@@ -112,7 +112,7 @@ void demo_empty_strings() {
     
     std::cout << "  back() test: ";
     try {
-        auto last = back(empty_str);
+        back(empty_str);
         std::cout << "Got character (unexpected)" << std::endl;
     } catch (const std::out_of_range& e) {
         std::cout << "Correctly threw exception: " << e.what() << std::endl;
@@ -120,7 +120,7 @@ void demo_empty_strings() {
     
     std::cout << "  at(0) test: ";
     try {
-        auto char_at_0 = at(empty_str, 0);
+        at(empty_str, 0);
         std::cout << "Got character (unexpected)" << std::endl;
     } catch (const std::out_of_range& e) {
         std::cout << "Correctly threw exception: " << e.what() << std::endl;
