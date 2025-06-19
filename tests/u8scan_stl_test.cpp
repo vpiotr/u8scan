@@ -70,7 +70,7 @@ UTEST_FUNC_DEF2(U8ScanSTL, STLForEachAlgorithm) {
 
 // Test predicate functions
 UTEST_FUNC_DEF2(U8ScanSTL, PredicateFunctions) {
-    std::string input = "A1 世界";
+    std::string input = u8"A1 世界";
     auto range = make_char_range(input);
     
     // Test is_ascii predicate
@@ -100,7 +100,7 @@ UTEST_FUNC_DEF2(U8ScanSTL, PredicateFunctions) {
 
 // Test CharIterator functionality
 UTEST_FUNC_DEF2(U8ScanSTL, CharIteratorFunctionality) {
-    std::string input = "Hello 世界!";
+    std::string input = u8"Hello 世界!";
     auto range = make_char_range(input);
     
     // Test iterator increment
@@ -120,6 +120,65 @@ UTEST_FUNC_DEF2(U8ScanSTL, CharIteratorFunctionality) {
     UTEST_ASSERT_EQUALS(9u, char_count);  // H e l l o (space) 世 界 !
 }
 
+// Test length function for UTF-8 string length calculation
+UTEST_FUNC_DEF2(U8ScanSTL, LengthFunction) {
+    // Test ASCII strings
+    std::string ascii = "Hello World";
+    UTEST_ASSERT_EQUALS(11u, length(ascii));
+    UTEST_ASSERT_EQUALS(11u, length(ascii, true));  // UTF-8 mode
+    UTEST_ASSERT_EQUALS(11u, length(ascii, false)); // ASCII mode
+    
+    // Test empty string
+    std::string empty = "";
+    UTEST_ASSERT_EQUALS(0u, length(empty));
+    
+    // Test single ASCII character
+    std::string single = "A";
+    UTEST_ASSERT_EQUALS(1u, length(single));
+    
+    // Test UTF-8 string with Chinese characters
+    std::string chinese = u8"世界";  // 2 characters, 6 bytes
+    UTEST_ASSERT_EQUALS(2u, length(chinese));
+    
+    // Test mixed ASCII and UTF-8
+    std::string mixed = u8"Hello 世界!";  // 9 characters: H e l l o (space) 世 界 !
+    UTEST_ASSERT_EQUALS(9u, length(mixed));
+    
+    // Test with emoji
+    std::string emoji = u8"🌍🚀";  // 2 emoji characters, 8 bytes
+    UTEST_ASSERT_EQUALS(2u, length(emoji));
+    
+    // Test complex mixed string
+    std::string complex = u8"Hello 世界! 123 🌍 Test.";  // 21 characters total
+    UTEST_ASSERT_EQUALS(21u, length(complex));
+    
+    // Test string with numbers and symbols
+    std::string numbers = u8"123$%^&*()";
+    UTEST_ASSERT_EQUALS(10u, length(numbers));
+    
+    // Test string with Cyrillic characters
+    std::string cyrillic = u8"Привет мир"; // 10 characters (including space)
+    UTEST_ASSERT_EQUALS(10u, length(cyrillic));
+    
+    // Test string with accented characters
+    std::string accented = u8"café naïve résumé"; // 17 characters (including spaces)
+    UTEST_ASSERT_EQUALS(17u, length(accented));
+    
+    // Test ASCII mode with UTF-8 characters (should count bytes, not characters)
+    std::string utf8_for_ascii = u8"世界";  // 2 characters, 6 bytes
+    UTEST_ASSERT_EQUALS(6u, length(utf8_for_ascii, false)); // ASCII mode counts bytes
+    UTEST_ASSERT_EQUALS(2u, length(utf8_for_ascii, true));  // UTF-8 mode counts characters
+    
+    // Test validation mode differences with valid UTF-8
+    std::string valid_utf8 = u8"Hello 世界!";
+    UTEST_ASSERT_EQUALS(9u, length(valid_utf8, true, true));   // With validation
+    UTEST_ASSERT_EQUALS(9u, length(valid_utf8, true, false));  // Without validation
+    
+    // Test newlines and tabs
+    std::string with_whitespace = u8"Hello\nWorld\t!";
+    UTEST_ASSERT_EQUALS(13u, length(with_whitespace));  // Including \n and \t
+}
+
 // Run all tests
 int main() {
     UTEST_PROLOG();
@@ -131,6 +190,7 @@ int main() {
     UTEST_FUNC2(U8ScanSTL, STLForEachAlgorithm);
     UTEST_FUNC2(U8ScanSTL, PredicateFunctions);
     UTEST_FUNC2(U8ScanSTL, CharIteratorFunctionality);
+    UTEST_FUNC2(U8ScanSTL, LengthFunction);
     
     UTEST_EPILOG();
 }

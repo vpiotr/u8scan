@@ -6,7 +6,7 @@
 // Define a test function using standard assertions
 bool test_module1_basic_utf8_handling() {
     // Test basic scanning functionality
-    std::string input = "Hello 世界!";
+    std::string input = u8"Hello 世界!";
     std::string output;
     
     // Scan and count characters
@@ -88,7 +88,7 @@ std::string module1_process_utf8() {
     result += "Without digits: " + no_digits + "\n";
     
     // Process a UTF-8 string
-    std::string utf8_input = "Hello 世界!";
+    std::string utf8_input = u8"Hello 世界!";
     result += "\nUTF-8 input: " + utf8_input + "\n";
     
     // Count characters by type
@@ -121,7 +121,7 @@ std::string module1_process_utf8() {
     
     // Using to_lower_ascii_str function to convert text to lowercase (simplified)
     std::string text_lower;
-    u8scan::scan_utf8("Hello WORLD 123 世界!", [&text_lower](const u8scan::CharInfo& info, const char* /*data*/) {
+    u8scan::scan_utf8(u8"Hello WORLD 123 世界!", [&text_lower](const u8scan::CharInfo& info, const char* /*data*/) {
         text_lower.append(u8scan::to_lower_ascii_str(info));
         return u8scan::ProcessResult(u8scan::ScanAction::COPY_TO_OUTPUT);
     });

@@ -9,7 +9,7 @@ using namespace u8scan;
 void demo_simplified_usage() {
     std::cout << "\n=== Simplified Usage Demo ===" << std::endl;
     
-    std::string input = "Hello 世界! 123";
+    std::string input = u8"Hello 世界! 123";
     std::cout << "Input: " << input << std::endl;
     
     // Use the simplified scan_utf8 function

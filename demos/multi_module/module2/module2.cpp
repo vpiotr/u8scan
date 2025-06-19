@@ -9,7 +9,7 @@
 // Define a test function using standard assertions
 bool test_module2_advanced_utf8_handling() {
     // Test STL algorithm compatibility with CharRange
-    std::string input = "Hello 世界! 123 🌍";
+    std::string input = u8"Hello 世界! 123 🌍";
     auto range = u8scan::make_char_range(input);
     
     // Count digits using STL algorithms
@@ -109,9 +109,9 @@ std::string module2_process_complex_utf8() {
     std::string result;
     
     // Process UTF-8 text with advanced features
-    UTF8TextProcessor processor("Hello 世界! 123 🌍 Test");
+    UTF8TextProcessor processor(u8"Hello 世界! 123 🌍 Test");
     
-    result += "Original text: Hello 世界! 123 🌍 Test\n";
+    result += u8"Original text: Hello 世界! 123 🌍 Test\n";
     result += "Uppercase: " + processor.to_uppercase() + "\n";
     result += "Lowercase: " + processor.to_lowercase() + "\n";
     result += "Quoted: " + processor.to_quoted() + "\n";
@@ -126,7 +126,7 @@ std::string module2_process_complex_utf8() {
     result += "  Spaces: " + std::to_string(stats["spaces"]) + "\n";
     
     // STL algorithm example
-    std::string sample = "Example with UTF-8: 世界 and emoji 🌍";
+    std::string sample = u8"Example with UTF-8: 世界 and emoji 🌍";
     auto range = u8scan::make_char_range(sample);
     
     result += "\nSTL Algorithm example:\n";

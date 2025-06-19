@@ -11,6 +11,7 @@
  * - Character conversion functions (to_lower_ascii, to_upper_ascii) for ASCII characters
  * - High-performance transformation and filtering with `transform_chars()`
  * - STL-like copy functions: `copy()`, `copy_if()`, `copy_until()`, `copy_from()`, `copy_n()`, `copy_while()`
+ * - String length calculation in Unicode code points with `length()`
  * - Custom character processing via `scan_utf8()` and `scan_ascii()`
  * - Utility: `quoted_str()` for safe quoting/escaping of strings
  *
@@ -22,6 +23,9 @@
  *
  * std::string input = "Hello 世界! 123 🌍 Test.";
  * auto char_range = u8scan::make_char_range(input);
+ *
+ * // Calculate string length in Unicode code points
+ * size_t char_count = u8scan::length(input);  // Returns 21, not 28 bytes
  *
  * // Count ASCII and UTF-8 characters
  * size_t ascii_count = std::count_if(char_range.begin(), char_range.end(), u8scan::predicates::is_ascii());
@@ -629,6 +633,35 @@ inline OutputIt copy_while(const std::string& input, OutputIt result, Predicate 
         result = std::copy(char_str.begin(), char_str.end(), result);
     }
     return result;
+}
+
+/**
+ * @brief Calculate the length of a UTF-8 string in code points (characters)
+ * @param input The UTF-8 string to measure
+ * @param utf8_mode Whether to use UTF-8 mode (true) or ASCII mode (false), defaults to true
+ * @param validate Whether to validate UTF-8 sequences, defaults to true
+ * @return The number of Unicode code points (characters) in the string
+ * 
+ * This function counts the number of Unicode characters (code points) in a UTF-8 string,
+ * not the number of bytes. For example:
+ * - "Hello" returns 5 (5 ASCII characters)
+ * - "世界" returns 2 (2 Chinese characters, even though they take 6 bytes)
+ * - "🌍🚀" returns 2 (2 emoji characters, even though they take 8 bytes)
+ * 
+ * In ASCII mode, each byte is counted as one character.
+ * In UTF-8 mode with validation disabled, malformed sequences are counted optimistically.
+ * 
+ * @code
+ * std::string text = u8"Hello 世界! 🌍";
+ * size_t length = u8scan::length(text);  // Returns 10 (not 16 bytes)
+ * 
+ * std::string ascii = "Hello World";
+ * size_t ascii_length = u8scan::length(ascii, false);  // ASCII mode: returns 11
+ * @endcode
+ */
+inline std::size_t length(const std::string& input, bool utf8_mode = true, bool validate = true) {
+    auto range = make_char_range(input, utf8_mode, validate);
+    return range.size();
 }
 
 /**

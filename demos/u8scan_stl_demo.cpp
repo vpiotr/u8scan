@@ -13,7 +13,7 @@ using namespace u8scan;
 void demo_stl_algorithms() {
     std::cout << "=== STL Algorithms Demo ===" << std::endl;
     
-    std::string input = "Hello 世界! 123 🌍 Test.";
+    std::string input = u8"Hello 世界! 123 🌍 Test.";
     std::cout << "Input: " << input << std::endl;
     
     auto char_range = make_char_range(input);
@@ -56,7 +56,7 @@ void demo_stl_algorithms() {
 void demo_stl_only_approach() {
     std::cout << "\n=== STL-Only Approach Demo ===" << std::endl;
     
-    std::string input = "Hello 世界! Test 123.";
+    std::string input = u8"Hello 世界! Test 123.";
     std::cout << "Input: " << input << std::endl;
     
     // 1. Use transform_chars to convert to uppercase (ASCII only)
@@ -106,8 +106,8 @@ void demo_stl_quoted_str() {
         "simple",
         "with\"quotes",
         "with\\escape",
-        "Hello 世界!",
-        "emoji 🌍 test",
+        u8"Hello 世界!",
+        u8"emoji 🌍 test",
         ""
     };
     

@@ -31,6 +31,7 @@ U8SCAN provides STL-friendly iterators, ranges, and utilities for processing UTF
 - **Character property predicates**: `is_ascii()`, `is_digit_ascii()`, `is_alpha_ascii()`, `is_alphanum_ascii()`, `is_lowercase_ascii()`, `is_uppercase_ascii()`, `is_whitespace_ascii()`, `is_emoji()`
 - **Character conversion**: `to_lower_ascii()` and `to_upper_ascii()` for ASCII character case conversion
 - **STL-like copy functions**: `copy()`, `copy_if()`, `copy_until()`, `copy_from()`, `copy_n()`, `copy_while()` for UTF-8 string filtering and processing
+- **String length calculation**: `length()` for counting Unicode code points (characters), not bytes
 - **High-performance scanning**: Custom character processing via `scan_utf8()` and `scan_ascii()`
 - **String utilities**: `quoted_str()` for safe quoting and escaping, `transform_chars()` for string transformation
 
@@ -55,6 +56,8 @@ int main() {
                                       u8scan::predicates::is_emoji());
     
     std::cout << "Menu: " << menu_item << std::endl;
+    std::cout << "Characters: " << u8scan::length(menu_item) << std::endl; // Unicode code points (characters)
+    std::cout << "Bytes: " << menu_item.length() << std::endl;            // Raw byte count
     std::cout << "ASCII characters: " << ascii_count << std::endl;     // Letters, numbers, punctuation
     std::cout << "UTF-8 characters: " << utf8_count << std::endl;      // Chinese characters + currency symbol
     std::cout << "Emoji characters: " << emoji_count << std::endl;     // Food and spice emojis
@@ -98,7 +101,7 @@ int main() {
 #include <algorithm>
 
 int main() {
-    std::string input = "Hello 世界! 123";
+    std::string input = u8"Hello 世界! 123";
     
     // Create a character range for STL algorithm compatibility
     auto range = u8scan::make_char_range(input);
@@ -117,7 +120,7 @@ int main() {
             return u8scan::ProcessResult(u8scan::ScanAction::COPY_TO_OUTPUT);
         });
     
-    std::cout << "Without digits: " << result << std::endl;  // "Hello 世界! "
+    std::cout << "Without digits: " << result << std::endl;  // u8"Hello 世界! "
     
     return 0;
 }
@@ -156,7 +159,7 @@ git clone https://github.com/vpiotr/u8scan.git
 #include <iostream>
 
 void stl_examples() {
-    std::string input = "Hello 世界! Test 123.";
+    std::string input = u8"Hello 世界! Test 123.";
     auto char_range = u8scan::make_char_range(input);
     
     // Count different character types
@@ -190,7 +193,7 @@ void stl_examples() {
 #include "u8scan/u8scan.h"
 
 void scanning_examples() {
-    std::string input = "Hello 世界! 123";
+    std::string input = u8"Hello 世界! 123";
     
     // Convert to uppercase (ASCII only)
     std::string uppercase = u8scan::scan_utf8(input, 
@@ -238,7 +241,7 @@ void transformation_examples() {
     std::cout << "Lowercase: " << lowercase << std::endl;
     
     // String quoting with custom delimiters
-    std::string original = "Text with \"quotes\" and 世界";
+    std::string original = u8"Text with \"quotes\" and 世界";
     std::string quoted = u8scan::quoted_str(original, '[', ']', '\\');
     std::cout << "Custom quoted: " << quoted << std::endl;
 }
@@ -296,7 +299,7 @@ void emoji_examples() {
 #include "u8scan/u8scan.h"
 
 void character_info_examples() {
-    std::string input = "A世界!";
+    std::string input = u8"A世界!";
     
     // Get character information at specific positions
     auto char_info = u8scan::get_char_info(input, 0);  // 'A'
@@ -437,6 +440,58 @@ std::string quoted_str(const std::string& input, char start_delim = '"',
                       char end_delim = '"', char escape = '\\');
 ```
 
+#### `length(input, utf8_mode, validate)`
+
+Calculates the length of a UTF-8 string in Unicode code points (characters), not bytes:
+
+```cpp
+std::size_t length(const std::string& input, bool utf8_mode = true, bool validate = true);
+```
+
+**Parameters:**
+- `input`: The UTF-8 string to measure
+- `utf8_mode`: Whether to use UTF-8 mode (true) or ASCII mode (false), defaults to true  
+- `validate`: Whether to validate UTF-8 sequences, defaults to true
+
+**Returns:** The number of Unicode code points (characters) in the string
+
+**Examples:**
+
+```cpp
+// ASCII strings
+std::string ascii = "Hello World";
+size_t length = u8scan::length(ascii);  // Returns 11
+
+// UTF-8 strings with multi-byte characters
+std::string chinese = u8"世界";  // 2 characters, 6 bytes
+size_t char_count = u8scan::length(chinese);  // Returns 2 (not 6)
+
+// Mixed ASCII and UTF-8
+std::string mixed = u8"Hello 世界!";  // 9 characters total
+size_t total = u8scan::length(mixed);  // Returns 9
+
+// Emoji characters
+std::string emoji = u8"🌍🚀";  // 2 emoji, 8 bytes
+size_t emoji_count = u8scan::length(emoji);  // Returns 2 (not 8)
+
+// Complex example from restaurant menu
+std::string menu_item = u8"宫保鸡丁 (Kung Pao Chicken) ¥28.00 🌶️🌶️";
+size_t item_length = u8scan::length(menu_item);  // Returns 35 characters
+
+// Compare with std::string::length() which counts bytes
+size_t byte_count = menu_item.length();  // Returns more than 35 bytes
+
+// ASCII mode - counts bytes instead of characters
+size_t byte_mode = u8scan::length(chinese, false);  // Returns 6 (bytes)
+size_t char_mode = u8scan::length(chinese, true);   // Returns 2 (characters)
+```
+
+This function is essential for:
+- **Text layout**: Calculating display width for formatting
+- **String truncation**: Cutting strings at character boundaries  
+- **Validation**: Ensuring string length limits are character-based
+- **Internationalization**: Proper text handling across languages
+
 ### Character Predicates
 
 All predicates in the `u8scan::predicates` namespace return `std::function<bool(const CharInfo&)>`:
@@ -494,7 +549,7 @@ template<typename OutputIt, typename Predicate>
 OutputIt copy_if(const std::string& input, OutputIt result, Predicate pred);
 
 // Example: Copy only ASCII letters
-std::string input = "Hello123世界!";
+std::string input = u8"Hello123世界!";
 std::string letters;
 u8scan::copy_if(input, std::back_inserter(letters), u8scan::predicates::is_alpha_ascii());
 // Result: "Hello"
@@ -514,7 +569,7 @@ template<typename OutputIt, typename Predicate>
 OutputIt copy_until(const std::string& input, OutputIt result, Predicate pred);
 
 // Example: Copy until hitting a digit
-std::string input = "Hello123世界";
+std::string input = u8"Hello123世界";
 std::string result;
 u8scan::copy_until(input, std::back_inserter(result), u8scan::predicates::is_digit_ascii());
 // Result: "Hello"
@@ -529,10 +584,10 @@ template<typename OutputIt, typename Predicate>
 OutputIt copy_from(const std::string& input, OutputIt result, Predicate pred);
 
 // Example: Copy from first digit onwards
-std::string input = "Hello123世界";
+std::string input = u8"Hello123世界";
 std::string result;
 u8scan::copy_from(input, std::back_inserter(result), u8scan::predicates::is_digit_ascii());
-// Result: "123世界"
+// Result: u8"123世界"
 ```
 
 #### `copy_n(input, output_iter, n)`
@@ -544,7 +599,7 @@ template<typename OutputIt>
 OutputIt copy_n(const std::string& input, OutputIt result, size_t n);
 
 // Example: Copy first 3 characters (Unicode-aware)
-std::string input = "Hello世界";
+std::string input = u8"Hello世界";
 std::string result;
 u8scan::copy_n(input, std::back_inserter(result), 3);
 // Result: "Hel" (3 Unicode characters, not bytes)

@@ -35,7 +35,7 @@ UTEST_FUNC_DEF2(U8Scan, UTF8MultiByteScanning) {
     // STL alternative: U8ScanSTL::STLAlgorithmCompatibility (see tests/u8scan_stl_test.cpp)
     // This test is covered by STL-based count_if, find_if, and CharRange usage.
     
-    std::string input = "Hello 世界!";
+    std::string input = u8"Hello 世界!";
     
     std::vector<CharInfo> chars;
     auto collector = [&chars](const CharInfo& info, const char* /*data*/) -> ProcessResult {
@@ -180,7 +180,7 @@ UTEST_FUNC_DEF2(U8Scan, ASCIIOnlyMode) {
     // STL alternative: U8ScanSTL::PredicateFunctions (see tests/u8scan_stl_test.cpp)
     // This test is covered by STL-based count_if and CharRange usage for ASCII/UTF-8 detection.
     
-    std::string input = "Hello 世界!";
+    std::string input = u8"Hello 世界!";
     
     std::vector<CharInfo> chars;
     auto collector = [&chars](const CharInfo& info, const char* /*data*/) -> ProcessResult {
@@ -248,7 +248,7 @@ UTEST_FUNC_DEF2(U8Scan, EmojiHandling) {
     // STL alternative: U8ScanSTL::PredicateFunctions (see tests/u8scan_stl_test.cpp)
     // This test is covered by STL-based count_if and CharRange usage for emoji/multibyte detection.
     
-    std::string input = "Hello 🌍 World!";
+    std::string input = u8"Hello 🌍 World!";
     
     std::vector<CharInfo> chars;
     auto collector = [&chars](const CharInfo& info, const char* /*data*/) -> ProcessResult {
@@ -277,7 +277,7 @@ UTEST_FUNC_DEF2(U8Scan, GetCharInfo) {
     // STL alternative: U8ScanSTL::CharIteratorFunctionality (see tests/u8scan_stl_test.cpp)
     // This test is covered by STL-based CharIterator and CharRange usage for position and increment.
     
-    std::string input = "A世🌍";
+    std::string input = u8"A世🌍";
     
     // Test ASCII character
     CharInfo info0 = u8scan::get_char_info(input, 0);
@@ -450,7 +450,7 @@ UTEST_FUNC_DEF2(U8Scan, STLForEachAlgorithm) {
 
 // Test predicate functions
 UTEST_FUNC_DEF2(U8Scan, PredicateFunctions) {
-    std::string input = "A1 世界";
+    std::string input = u8"A1 世界";
     auto range = make_char_range(input);
     
     // Test is_ascii predicate
@@ -480,7 +480,7 @@ UTEST_FUNC_DEF2(U8Scan, PredicateFunctions) {
 
 // Test CharIterator functionality
 UTEST_FUNC_DEF2(U8Scan, CharIteratorFunctionality) {
-    std::string input = "Hello 世界!";
+    std::string input = u8"Hello 世界!";
     auto range = make_char_range(input);
     
     // Test iterator increment
