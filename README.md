@@ -42,10 +42,11 @@ U8SCAN provides STL-friendly iterators, ranges, and utilities for processing UTF
 #include <iostream>
 
 int main() {
-    std::string input = "Hello 世界! 123 🌍 Test.";
-    auto char_range = u8scan::make_char_range(input);
+    // Fun example: Chinese restaurant menu items with UTF-8 string literals
+    std::string menu_item = u8"🍜 麻婆豆腐 (Mapo Tofu) - ¥45.99 🌶️🌶️🌶️";
+    auto char_range = u8scan::make_char_range(menu_item);
     
-    // Count ASCII and UTF-8 characters using STL algorithms
+    // Count different character types using STL algorithms
     size_t ascii_count = std::count_if(char_range.begin(), char_range.end(), 
                                       u8scan::predicates::is_ascii());
     size_t utf8_count = std::count_if(char_range.begin(), char_range.end(), 
@@ -53,26 +54,27 @@ int main() {
     size_t emoji_count = std::count_if(char_range.begin(), char_range.end(), 
                                       u8scan::predicates::is_emoji());
     
-    std::cout << "ASCII characters: " << ascii_count << std::endl;
-    std::cout << "UTF-8 multi-byte characters: " << utf8_count << std::endl;
-    std::cout << "Emoji characters: " << emoji_count << std::endl;
+    std::cout << "Menu: " << menu_item << std::endl;
+    std::cout << "ASCII characters: " << ascii_count << std::endl;     // Letters, numbers, punctuation
+    std::cout << "UTF-8 characters: " << utf8_count << std::endl;      // Chinese characters + currency symbol
+    std::cout << "Emoji characters: " << emoji_count << std::endl;     // Food and spice emojis
     
-    // Transform to uppercase (ASCII only) using built-in functions
-    std::string upper;
-    u8scan::transform_chars(input, std::back_inserter(upper), 
+    // Extract just the price using copy functions
+    std::string price_only;
+    u8scan::copy_if(menu_item, std::back_inserter(price_only), 
+        [](const u8scan::CharInfo& info) {
+            return u8scan::predicates::is_digit_ascii()(info) || 
+                   info.codepoint == '.' || info.codepoint == 0x00A5; // Include ¥ symbol
+        });
+    std::cout << "Price extracted: " << price_only << std::endl;       // "¥45.99"
+    
+    // Transform English text to uppercase (preserves Chinese characters and emojis)
+    std::string upper_menu;
+    u8scan::transform_chars(menu_item, std::back_inserter(upper_menu), 
         [](const u8scan::CharInfo& info) {
             return static_cast<char>(u8scan::to_upper_ascii(info));
         });
-    
-    // String quoting and escaping
-    std::string quoted = u8scan::quoted_str("A\"B世界", '"', '"', '\\');
-    std::cout << "Quoted: " << quoted << std::endl; // "A\"B世界"
-    
-    // Copy functions for UTF-8 string filtering
-    std::string digits_only;
-    u8scan::copy_if(input, std::back_inserter(digits_only), 
-                    u8scan::predicates::is_digit_ascii());
-    std::cout << "Digits only: " << digits_only << std::endl; // "123"
+    std::cout << "Uppercase: " << upper_menu << std::endl;
     
     return 0;
 }

@@ -500,6 +500,74 @@ UTEST_FUNC_DEF2(U8Scan, CharIteratorFunctionality) {
     UTEST_ASSERT_EQUALS(9u, char_count);  // H e l l o (space) 世 界 !
 }
 
+// Test UTF-8 string literals and various character encodings
+UTEST_FUNC_DEF2(U8Scan, UTF8StringLiterals) {
+    // Test various UTF-8 string literals
+    
+    // 1. Basic Latin and CJK characters
+    std::string cjk_string = u8"Hello 世界! 🌍";
+    auto cjk_range = make_char_range(cjk_string);
+    
+    // Count different character types
+    auto ascii_count = std::count_if(cjk_range.begin(), cjk_range.end(), predicates::is_ascii());
+    auto utf8_count = std::count_if(cjk_range.begin(), cjk_range.end(), predicates::is_utf8());
+    auto emoji_count = std::count_if(cjk_range.begin(), cjk_range.end(), predicates::is_emoji());
+    
+    UTEST_ASSERT_EQUALS(8u, ascii_count);  // "Hello !"
+    UTEST_ASSERT_EQUALS(3u, utf8_count);   // "世", "界", "🌍"
+    UTEST_ASSERT_EQUALS(1u, emoji_count);  // "🌍"
+    
+    // 2. Accented characters (Latin Extended)
+    std::string accented = u8"Café résumé naïve";
+    auto accented_range = make_char_range(accented);
+    auto accented_size = std::distance(accented_range.begin(), accented_range.end());
+    UTEST_ASSERT_EQUALS(17u, accented_size);  // 17 Unicode characters
+    
+    // 3. Cyrillic script
+    std::string cyrillic = u8"Привет мир";  // "Hello world" in Russian
+    auto cyrillic_range = make_char_range(cyrillic);
+    auto cyrillic_ascii = std::count_if(cyrillic_range.begin(), cyrillic_range.end(), predicates::is_ascii());
+    auto cyrillic_utf8 = std::count_if(cyrillic_range.begin(), cyrillic_range.end(), predicates::is_utf8());
+    
+    UTEST_ASSERT_EQUALS(1u, cyrillic_ascii);  // Only the space character
+    UTEST_ASSERT_EQUALS(9u, cyrillic_utf8);  // All Cyrillic characters
+    
+    // 4. Mixed scripts with numbers and punctuation
+    std::string mixed = u8"Price: €25.99 (税込み)";  // Euro symbol + Japanese
+    auto mixed_range = make_char_range(mixed);
+    auto digit_count = std::count_if(mixed_range.begin(), mixed_range.end(), predicates::is_digit_ascii());
+    auto alphanum_count = std::count_if(mixed_range.begin(), mixed_range.end(), predicates::is_alphanum_ascii());
+    
+    UTEST_ASSERT_EQUALS(4u, digit_count);     // "2", "5", "9", "9"
+    UTEST_ASSERT_EQUALS(9u, alphanum_count);  // Same digits (no ASCII letters in this string)
+    
+    // 5. Test scanning with UTF-8 literals
+    std::string scanned_result = scan_utf8(mixed, 
+        [](const CharInfo& info, const char* /*data*/) {
+            // Remove ASCII digits, keep everything else
+            if (predicates::is_digit_ascii()(info)) {
+                return ProcessResult(ScanAction::IGNORE);
+            }
+            return ProcessResult(ScanAction::COPY_TO_OUTPUT);
+        });
+    
+    // Should remove ASCII digits but keep everything else
+    UTEST_ASSERT_STR_EQUALS(u8"Price: €. (税込み)", scanned_result.c_str());
+    
+    // 6. Test character info for specific UTF-8 characters
+    auto euro_info = get_char_info(u8"€", 0);  // Euro symbol
+    UTEST_ASSERT_FALSE(euro_info.is_ascii);
+    UTEST_ASSERT_TRUE(euro_info.is_valid_utf8);
+    UTEST_ASSERT_EQUALS(3u, euro_info.byte_count);  // Euro is 3 bytes in UTF-8
+    UTEST_ASSERT_EQUALS(0x20AC, euro_info.codepoint);  // Unicode codepoint for Euro
+    
+    auto chinese_info = get_char_info(u8"世", 0);  // Chinese character
+    UTEST_ASSERT_FALSE(chinese_info.is_ascii);
+    UTEST_ASSERT_TRUE(chinese_info.is_valid_utf8);
+    UTEST_ASSERT_EQUALS(3u, chinese_info.byte_count);
+    UTEST_ASSERT_EQUALS(0x4E16, chinese_info.codepoint);  // Unicode for "世"
+}
+
 // Note: String conversion functions (to_string, to_lower_ascii_str, to_upper_ascii_str) 
 // are tested and verified to work correctly in the demo applications
 
@@ -524,6 +592,7 @@ int main() {
     UTEST_FUNC2(U8Scan, BOMOnly);
     UTEST_FUNC2(U8Scan, DisableBOMDetection);
     UTEST_FUNC2(U8Scan, LargeReplacements);
+    UTEST_FUNC2(U8Scan, UTF8StringLiterals);
     
     // STL algorithm compatibility tests
     UTEST_FUNC2(U8Scan, STLAlgorithmCompatibility);
