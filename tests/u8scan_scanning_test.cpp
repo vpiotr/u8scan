@@ -465,6 +465,10 @@ UTEST_FUNC_DEF2(U8Scan, PredicateFunctions) {
     auto alphas = std::count_if(range.begin(), range.end(), predicates::is_alpha_ascii());
     UTEST_ASSERT_EQUALS(1u, alphas);  // "A"
     
+    // Test is_alphanum_ascii predicate
+    auto alphanums = std::count_if(range.begin(), range.end(), predicates::is_alphanum_ascii());
+    UTEST_ASSERT_EQUALS(2u, alphanums);  // "A", "1"
+    
     // Test is_whitespace_ascii predicate  
     auto whitespaces = std::count_if(range.begin(), range.end(), predicates::is_whitespace_ascii());
     UTEST_ASSERT_EQUALS(1u, whitespaces);  // " "

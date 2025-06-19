@@ -7,7 +7,7 @@
  * ## Features
  * - STL-compatible `CharIterator` and `CharRange` for use with standard algorithms
  * - Efficient UTF-8 and ASCII scanning, with BOM detection and handling
- * - Character property predicates (is_ascii, is_digit_ascii, is_alpha_ascii, is_lowercase_ascii, is_uppercase_ascii, etc.)
+ * - Character property predicates (is_ascii, is_digit_ascii, is_alpha_ascii, is_alphanum_ascii, is_lowercase_ascii, is_uppercase_ascii, etc.)
  * - Character conversion functions (to_lower_ascii, to_upper_ascii) for ASCII characters
  * - High-performance transformation and filtering with `transform_chars()`
  * - STL-like copy functions: `copy()`, `copy_if()`, `copy_until()`, `copy_from()`, `copy_n()`, `copy_while()`
@@ -698,6 +698,18 @@ inline std::function<bool(const CharInfo&)> is_alpha_ascii() {
     return [](const CharInfo& info) {
         return (info.codepoint >= 'A' && info.codepoint <= 'Z') ||
                (info.codepoint >= 'a' && info.codepoint <= 'z');
+    };
+}
+
+/**
+ * @brief Check if character is ASCII alphanumeric
+ * @return Predicate function that returns true for ASCII letters and digits (A-Z, a-z, 0-9)
+ */
+inline std::function<bool(const CharInfo&)> is_alphanum_ascii() {
+    return [](const CharInfo& info) {
+        return (info.codepoint >= 'A' && info.codepoint <= 'Z') ||
+               (info.codepoint >= 'a' && info.codepoint <= 'z') ||
+               (info.codepoint >= '0' && info.codepoint <= '9');
     };
 }
 

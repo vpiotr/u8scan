@@ -28,7 +28,7 @@ U8SCAN provides STL-friendly iterators, ranges, and utilities for processing UTF
 
 - **STL-compatible iterators**: `CharIterator` and `CharRange` for seamless integration with standard algorithms
 - **UTF-8 and ASCII scanning**: Efficient character-by-character processing with BOM detection
-- **Character property predicates**: `is_ascii()`, `is_digit_ascii()`, `is_alpha_ascii()`, `is_lowercase_ascii()`, `is_uppercase_ascii()`, `is_whitespace_ascii()`, `is_emoji()`
+- **Character property predicates**: `is_ascii()`, `is_digit_ascii()`, `is_alpha_ascii()`, `is_alphanum_ascii()`, `is_lowercase_ascii()`, `is_uppercase_ascii()`, `is_whitespace_ascii()`, `is_emoji()`
 - **Character conversion**: `to_lower_ascii()` and `to_upper_ascii()` for ASCII character case conversion
 - **STL-like copy functions**: `copy()`, `copy_if()`, `copy_until()`, `copy_from()`, `copy_n()`, `copy_while()` for UTF-8 string filtering and processing
 - **High-performance scanning**: Custom character processing via `scan_utf8()` and `scan_ascii()`
@@ -444,6 +444,7 @@ All predicates in the `u8scan::predicates` namespace return `std::function<bool(
 - `is_valid()` - Valid UTF-8 sequence
 - `is_digit_ascii()` - ASCII digit (0-9)
 - `is_alpha_ascii()` - ASCII letter (A-Z, a-z)
+- `is_alphanum_ascii()` - ASCII alphanumeric character (A-Z, a-z, 0-9)
 - `is_lowercase_ascii()` - ASCII lowercase letter (a-z)
 - `is_uppercase_ascii()` - ASCII uppercase letter (A-Z)
 - `is_whitespace_ascii()` - ASCII whitespace (space, tab, newline, carriage return)
@@ -495,6 +496,11 @@ std::string input = "Hello123世界!";
 std::string letters;
 u8scan::copy_if(input, std::back_inserter(letters), u8scan::predicates::is_alpha_ascii());
 // Result: "Hello"
+
+// Example: Copy only alphanumeric characters
+std::string alphanum_only;
+u8scan::copy_if(input, std::back_inserter(alphanum_only), u8scan::predicates::is_alphanum_ascii());
+// Result: "Hello123"
 ```
 
 #### `copy_until(input, output_iter, predicate)`
