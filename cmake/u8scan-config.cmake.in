@@ -1,0 +1,4 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/u8scan-targets.cmake")
+check_required_components(u8scan)
