@@ -2,6 +2,10 @@
 #include "../include/u8scan/u8scan.h"
 #include <stdexcept>
 #include <string>
+#include <iostream>
+#include <iomanip>
+#include <iostream>
+#include <iomanip>
 
 using namespace u8scan;
 
@@ -429,6 +433,169 @@ UTEST_FUNC_DEF2(U8ScanAccess, BOMEdgeCases) {
     UTEST_ASSERT_EQUALS(at(bom_emoji, 0).codepoint, front(bom_emoji).codepoint);
 }
 
+// Test comprehensive string analysis with UTF-8 string (without BOM)
+UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisUTF8NoBOM) {
+    // Using test string from UTF8StringLiterals
+    std::string input = u8"Hello 世界! 🌍";
+    
+    // Write input string to console
+    std::cout << "\n=== String Analysis Test: UTF-8 without BOM ===" << std::endl;
+    std::cout << "Input string: " << input << std::endl;
+    
+    // Write string statistics
+    std::cout << "\n--- String Statistics ---" << std::endl;
+    std::cout << "Number of bytes: " << input.size() << std::endl;
+    std::cout << "Length (characters): " << length(input) << std::endl;
+    std::cout << "Contains BOM: " << (has_bom(input) ? "yes" : "no") << std::endl;
+    
+    // Write character table
+    std::cout << "\n--- Character Analysis ---" << std::endl;
+    std::cout << "Pos | Character | is_ascii | is_utf8 | is_valid" << std::endl;
+    std::cout << "----|-----------|----------|---------|----------" << std::endl;
+    
+    auto char_range = make_char_range(input);
+    size_t pos = 0;
+    for (auto it = char_range.begin(); it != char_range.end(); ++it, ++pos) {
+        CharInfo info = *it;
+        std::string char_str = to_string(info);
+        std::cout << std::setw(3) << pos << " | " 
+                  << std::setw(9) << char_str << " | "
+                  << std::setw(8) << (info.is_ascii ? "true" : "false") << " | "
+                  << std::setw(7) << (!info.is_ascii ? "true" : "false") << " | "
+                  << std::setw(8) << (info.is_valid_utf8 ? "true" : "false") << std::endl;
+    }
+    
+    // Perform assertions
+    UTEST_ASSERT_EQUALS(18u, input.size());  // Byte count: "Hello 世界! 🌍"
+    UTEST_ASSERT_EQUALS(11u, length(input)); // Character count: "Hello 世界! 🌍"
+    UTEST_ASSERT_FALSE(has_bom(input));      // No BOM
+    
+    // Test specific characters
+    auto h_char = at(input, 0);  // 'H'
+    UTEST_ASSERT_TRUE(h_char.is_ascii);
+    UTEST_ASSERT_TRUE(h_char.is_valid_utf8);
+    
+    auto chinese_char = at(input, 6);  // '世'
+    UTEST_ASSERT_FALSE(chinese_char.is_ascii);
+    UTEST_ASSERT_TRUE(chinese_char.is_valid_utf8);
+    
+    auto emoji_char = at(input, 10);  // '🌍'
+    UTEST_ASSERT_FALSE(emoji_char.is_ascii);
+    UTEST_ASSERT_TRUE(emoji_char.is_valid_utf8);
+}
+
+// Test comprehensive string analysis with UTF-8 string (with BOM)
+UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisUTF8WithBOM) {
+    // Using test string from UTF8StringLiterals with BOM
+    std::string input = bom_str() + std::string(u8"Hello 世界! 🌍");
+    
+    // Write input string to console
+    std::cout << "\n=== String Analysis Test: UTF-8 with BOM ===" << std::endl;
+    std::cout << "Input string: " << input << std::endl;
+    
+    // Write string statistics
+    std::cout << "\n--- String Statistics ---" << std::endl;
+    std::cout << "Number of bytes: " << input.size() << std::endl;
+    std::cout << "Length (characters): " << length(input) << std::endl;
+    std::cout << "Contains BOM: " << (has_bom(input) ? "yes" : "no") << std::endl;
+    
+    // Write character table
+    std::cout << "\n--- Character Analysis ---" << std::endl;
+    std::cout << "Pos | Character | is_ascii | is_utf8 | is_valid" << std::endl;
+    std::cout << "----|-----------|----------|---------|----------" << std::endl;
+    
+    auto char_range = make_char_range(input, true, true);  
+    size_t pos = 0;
+    size_t chars_processed = 0;
+    for (auto it = char_range.begin(); it != char_range.end(); ++it, ++pos) {
+        CharInfo info = *it;
+        chars_processed++;
+        std::string char_str = to_string(info);
+        std::cout << std::setw(3) << pos << " | " 
+                  << std::setw(9) << char_str << " | "
+                  << std::setw(8) << (info.is_ascii ? "true" : "false") << " | "
+                  << std::setw(7) << (!info.is_ascii ? "true" : "false") << " | "
+                  << std::setw(8) << (info.is_valid_utf8 ? "true" : "false") << std::endl;
+    }
+    
+    // Perform assertions
+    UTEST_ASSERT_EQUALS(21u, input.size());  // Byte count (18 + 3 BOM bytes)
+    UTEST_ASSERT_EQUALS(11u, length(input)); // Character count (BOM ignored): "Hello 世界! 🌍"
+    UTEST_ASSERT_TRUE(has_bom(input));       // Has BOM
+    UTEST_ASSERT_EQUALS(chars_processed, length(input)); // Should match character count
+    
+    // Test specific characters (BOM is ignored in at() function)
+    auto h_char = at(input, 0);  // 'H' (first character after BOM)
+    UTEST_ASSERT_TRUE(h_char.is_ascii);
+    UTEST_ASSERT_TRUE(h_char.is_valid_utf8);
+    
+    auto chinese_char = at(input, 6);  // '世'
+    UTEST_ASSERT_FALSE(chinese_char.is_ascii);
+    UTEST_ASSERT_TRUE(chinese_char.is_valid_utf8);
+    
+    auto emoji_char = at(input, 10);  // '🌍'
+    UTEST_ASSERT_FALSE(emoji_char.is_ascii);
+    UTEST_ASSERT_TRUE(emoji_char.is_valid_utf8);
+}
+
+// Test comprehensive string analysis with ASCII-only string
+UTEST_FUNC_DEF2(U8ScanAccess, StringAnalysisASCIIOnly) {
+    // ASCII-only test string
+    std::string input = "Hello World! 123";
+    
+    // Write input string to console
+    std::cout << "\n=== String Analysis Test: ASCII-only ===" << std::endl;
+    std::cout << "Input string: " << input << std::endl;
+    
+    // Write string statistics
+    std::cout << "\n--- String Statistics ---" << std::endl;
+    std::cout << "Number of bytes: " << input.size() << std::endl;
+    std::cout << "Length (characters): " << length(input) << std::endl;
+    std::cout << "Contains BOM: " << (has_bom(input) ? "yes" : "no") << std::endl;
+    
+    // Write character table
+    std::cout << "\n--- Character Analysis ---" << std::endl;
+    std::cout << "Pos | Character | is_ascii | is_utf8 | is_valid" << std::endl;
+    std::cout << "----|-----------|----------|---------|----------" << std::endl;
+    
+    auto char_range = make_char_range(input);
+    size_t pos = 0;
+    for (auto it = char_range.begin(); it != char_range.end(); ++it, ++pos) {
+        CharInfo info = *it;
+        std::string char_str = to_string(info);
+        std::cout << std::setw(3) << pos << " | " 
+                  << std::setw(9) << char_str << " | "
+                  << std::setw(8) << (info.is_ascii ? "true" : "false") << " | "
+                  << std::setw(7) << (!info.is_ascii ? "true" : "false") << " | "
+                  << std::setw(8) << (info.is_valid_utf8 ? "true" : "false") << std::endl;
+    }
+    
+    // Perform assertions
+    UTEST_ASSERT_EQUALS(16u, input.size());   // Byte count
+    UTEST_ASSERT_EQUALS(16u, length(input));  // Character count (same as bytes for ASCII)
+    UTEST_ASSERT_FALSE(has_bom(input));       // No BOM
+    
+    // Test that all characters are ASCII and valid UTF-8
+    for (auto it = char_range.begin(); it != char_range.end(); ++it) {
+        CharInfo info = *it;
+        UTEST_ASSERT_TRUE(info.is_ascii);
+        UTEST_ASSERT_TRUE(info.is_valid_utf8);
+    }
+    
+    // Test specific characters
+    auto h_char = at(input, 0);  // 'H'
+    UTEST_ASSERT_EQUALS('H', static_cast<char>(h_char.codepoint));
+    UTEST_ASSERT_TRUE(h_char.is_ascii);
+    
+    auto space_char = at(input, 5);  // ' '
+    UTEST_ASSERT_EQUALS(' ', static_cast<char>(space_char.codepoint));
+    UTEST_ASSERT_TRUE(space_char.is_ascii);
+    
+    auto digit_char = at(input, 13);  // '1'
+    UTEST_ASSERT_EQUALS('1', static_cast<char>(digit_char.codepoint));
+    UTEST_ASSERT_TRUE(digit_char.is_ascii);
+}
+
 // Main test runner
 int main() {
     UTEST_PROLOG();
@@ -452,6 +619,11 @@ int main() {
     // Comprehensive BOM tests
     UTEST_FUNC2(U8ScanAccess, ComprehensiveBOMTests);
     UTEST_FUNC2(U8ScanAccess, BOMEdgeCases);
+    
+    // String analysis tests
+    UTEST_FUNC2(U8ScanAccess, StringAnalysisUTF8NoBOM);
+    UTEST_FUNC2(U8ScanAccess, StringAnalysisUTF8WithBOM);
+    UTEST_FUNC2(U8ScanAccess, StringAnalysisASCIIOnly);
     
     UTEST_EPILOG();
 }

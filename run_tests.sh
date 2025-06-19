@@ -37,13 +37,15 @@ U8SCAN_SCANNING_TEST_BIN="$BUILD_DIR/bin/u8scan_scanning_test"
 U8SCAN_STL_TEST_BIN="$BUILD_DIR/bin/u8scan_stl_test"
 U8SCAN_EMOJI_TEST_BIN="$BUILD_DIR/bin/u8scan_emoji_test"
 U8SCAN_COPY_TEST_BIN="$BUILD_DIR/bin/u8scan_copy_test"
+U8SCAN_ACCESS_TEST_BIN="$BUILD_DIR/bin/u8scan_access_test"
 
-if [ ! -x "$U8SCAN_SCANNING_TEST_BIN" ] || [ ! -x "$U8SCAN_STL_TEST_BIN" ] || [ ! -x "$U8SCAN_EMOJI_TEST_BIN" ] || [ ! -x "$U8SCAN_COPY_TEST_BIN" ]; then
+if [ ! -x "$U8SCAN_SCANNING_TEST_BIN" ] || [ ! -x "$U8SCAN_STL_TEST_BIN" ] || [ ! -x "$U8SCAN_EMOJI_TEST_BIN" ] || [ ! -x "$U8SCAN_COPY_TEST_BIN" ] || [ ! -x "$U8SCAN_ACCESS_TEST_BIN" ]; then
     echo -e "${RED}Test binaries not found or not executable:${NC}"
     [ ! -x "$U8SCAN_SCANNING_TEST_BIN" ] && echo -e "${RED}- $U8SCAN_SCANNING_TEST_BIN${NC}"
     [ ! -x "$U8SCAN_STL_TEST_BIN" ] && echo -e "${RED}- $U8SCAN_STL_TEST_BIN${NC}"
     [ ! -x "$U8SCAN_EMOJI_TEST_BIN" ] && echo -e "${RED}- $U8SCAN_EMOJI_TEST_BIN${NC}"
     [ ! -x "$U8SCAN_COPY_TEST_BIN" ] && echo -e "${RED}- $U8SCAN_COPY_TEST_BIN${NC}"
+    [ ! -x "$U8SCAN_ACCESS_TEST_BIN" ] && echo -e "${RED}- $U8SCAN_ACCESS_TEST_BIN${NC}"
     echo -e "${YELLOW}Try running the build script first: ./build.sh${NC}"
     exit 1
 fi
@@ -73,8 +75,13 @@ echo -e "${BLUE}Running U8Scan Copy Tests:${NC}"
 "$U8SCAN_COPY_TEST_BIN"
 copy_exit_code=$?
 
+echo ""
+echo -e "${BLUE}Running U8Scan Access Tests:${NC}"
+"$U8SCAN_ACCESS_TEST_BIN"
+access_exit_code=$?
+
 # Check exit codes
-if [ $scanning_exit_code -eq 0 ] && [ $stl_exit_code -eq 0 ] && [ $emoji_exit_code -eq 0 ] && [ $copy_exit_code -eq 0 ]; then
+if [ $scanning_exit_code -eq 0 ] && [ $stl_exit_code -eq 0 ] && [ $emoji_exit_code -eq 0 ] && [ $copy_exit_code -eq 0 ] && [ $access_exit_code -eq 0 ]; then
     exit_code=0
 else
     exit_code=1

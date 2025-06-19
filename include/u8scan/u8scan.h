@@ -242,11 +242,25 @@ private:
     bool validate_;
     
 public:
-    CharRange(const std::string& str, bool utf8_mode = true, bool validate = true)
-        : str_(&str), start_pos_(0), end_pos_(str.length()), utf8_mode_(utf8_mode), validate_(validate) {}
+    CharRange(const std::string& str, bool utf8_mode = true, bool validate = true, bool skip_bom = true)
+        : str_(&str), start_pos_(0), end_pos_(str.length()), utf8_mode_(utf8_mode), validate_(validate) {
+        if (skip_bom && str.length() >= 3 &&
+            static_cast<unsigned char>(str[0]) == 0xEF &&
+            static_cast<unsigned char>(str[1]) == 0xBB &&
+            static_cast<unsigned char>(str[2]) == 0xBF) {
+            start_pos_ = 3;  // Skip UTF-8 BOM
+        }
+    }
     
-    CharRange(const std::string& str, std::size_t start, std::size_t end, bool utf8_mode = true, bool validate = true)
-        : str_(&str), start_pos_(start), end_pos_(end), utf8_mode_(utf8_mode), validate_(validate) {}
+    CharRange(const std::string& str, std::size_t start, std::size_t end, bool utf8_mode = true, bool validate = true, bool skip_bom = true)
+        : str_(&str), start_pos_(start), end_pos_(end), utf8_mode_(utf8_mode), validate_(validate) {
+        if (skip_bom && start == 0 && str.length() >= 3 &&
+            static_cast<unsigned char>(str[0]) == 0xEF &&
+            static_cast<unsigned char>(str[1]) == 0xBB &&
+            static_cast<unsigned char>(str[2]) == 0xBF) {
+            start_pos_ = 3;  // Skip UTF-8 BOM
+        }
+    }
     
     CharIterator begin() const {
         return CharIterator(str_, start_pos_, utf8_mode_, validate_);
@@ -517,15 +531,15 @@ inline std::string scan_string_ascii(const std::string& input, CharProcessor pro
 /**
  * @brief Create a character range for STL algorithms
  */
-inline CharRange make_char_range(const std::string& str, bool utf8_mode = true, bool validate = true) {
-    return CharRange(str, utf8_mode, validate);
+inline CharRange make_char_range(const std::string& str, bool utf8_mode = true, bool validate = true, bool skip_bom = true) {
+    return CharRange(str, utf8_mode, validate, skip_bom);
 }
 
 /**
  * @brief Create a character range with bounds
  */
-inline CharRange make_char_range(const std::string& str, std::size_t start, std::size_t end, bool utf8_mode = true, bool validate = true) {
-    return CharRange(str, start, end, utf8_mode, validate);
+inline CharRange make_char_range(const std::string& str, std::size_t start, std::size_t end, bool utf8_mode = true, bool validate = true, bool skip_bom = true) {
+    return CharRange(str, start, end, utf8_mode, validate, skip_bom);
 }
 
 /**
@@ -1188,6 +1202,15 @@ inline std::string to_upper_ascii_str(const CharInfo& info) {
     } else {
         return to_string(info);
     }
+}
+
+/**
+ * @brief Checks if a string contains a UTF-8 BOM (Byte Order Mark)
+ * @param input The input string to check
+ * @return True if the string starts with a UTF-8 BOM, false otherwise
+ */
+inline bool has_bom(const std::string& input) {
+    return details::detect_bom(input).found;
 }
 
 // Implementation for CharIterator
