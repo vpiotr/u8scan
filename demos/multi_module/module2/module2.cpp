@@ -13,7 +13,7 @@ bool test_module2_advanced_utf8_handling() {
     auto range = u8scan::make_char_range(input);
     
     // Count digits using STL algorithms
-    int digit_count = std::count_if(range.begin(), range.end(), u8scan::predicates::is_digit_ascii());
+    int digit_count = static_cast<int>(std::count_if(range.begin(), range.end(), u8scan::predicates::is_digit_ascii()));
     assert(digit_count == 3);  // 1, 2, 3
     (void)digit_count;  // Suppress unused warning in release builds
     
@@ -33,8 +33,8 @@ bool test_module2_advanced_utf8_handling() {
     std::string test_str = "AbCdEf123";
     auto test_range = u8scan::make_char_range(test_str);
     
-    int lowercase_count = std::count_if(test_range.begin(), test_range.end(), u8scan::predicates::is_lowercase_ascii());
-    int uppercase_count = std::count_if(test_range.begin(), test_range.end(), u8scan::predicates::is_uppercase_ascii());
+    int lowercase_count = static_cast<int>(std::count_if(test_range.begin(), test_range.end(), u8scan::predicates::is_lowercase_ascii()));
+    int uppercase_count = static_cast<int>(std::count_if(test_range.begin(), test_range.end(), u8scan::predicates::is_uppercase_ascii()));
     
     assert(lowercase_count == 3);  // b, d, f
     assert(uppercase_count == 3);  // A, C, E
@@ -154,8 +154,8 @@ std::string module2_process_complex_utf8() {
     result += "\nCase analysis using predicates:\n";
     
     // Count lowercase and uppercase letters
-    int lowercase_count = std::count_if(range.begin(), range.end(), u8scan::predicates::is_lowercase_ascii());
-    int uppercase_count = std::count_if(range.begin(), range.end(), u8scan::predicates::is_uppercase_ascii());
+    int lowercase_count = static_cast<int>(std::count_if(range.begin(), range.end(), u8scan::predicates::is_lowercase_ascii()));
+    int uppercase_count = static_cast<int>(std::count_if(range.begin(), range.end(), u8scan::predicates::is_uppercase_ascii()));
     
     result += "  Lowercase letters (ASCII): " + std::to_string(lowercase_count) + "\n";
     result += "  Uppercase letters (ASCII): " + std::to_string(uppercase_count) + "\n";

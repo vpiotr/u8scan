@@ -26,7 +26,7 @@ UTEST_FUNC_DEF2(U8ScanSTL, STLAlgorithmCompatibility) {
     UTEST_ASSERT_TRUE(no_invalid);
     
     // Test with count_if
-    std::size_t digit_count = std::count_if(range.begin(), range.end(), predicates::is_digit_ascii());
+    std::size_t digit_count = static_cast<std::size_t>(std::count_if(range.begin(), range.end(), predicates::is_digit_ascii()));
     UTEST_ASSERT_EQUALS(3u, digit_count);  // "123"
     
     // Test with find_if
@@ -116,7 +116,7 @@ UTEST_FUNC_DEF2(U8ScanSTL, CharIteratorFunctionality) {
     UTEST_ASSERT_TRUE(it2 == it);
     
     // Test range size
-    std::size_t char_count = std::distance(range.begin(), range.end());
+    std::size_t char_count = static_cast<std::size_t>(std::distance(range.begin(), range.end()));
     UTEST_ASSERT_EQUALS(9u, char_count);  // H e l l o (space) 世 界 !
 }
 

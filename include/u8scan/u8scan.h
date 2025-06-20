@@ -271,7 +271,7 @@ public:
     }
     
     std::size_t size() const {
-        return std::distance(begin(), end());
+        return static_cast<std::size_t>(std::distance(begin(), end()));
     }
     
     bool empty() const {
@@ -327,7 +327,7 @@ inline CharInfo extract_char_info(const std::string& input, std::size_t pos, boo
                 info.codepoint = static_cast<uint32_t>(first_byte);
             } else {
                 // Validate continuation bytes and extract codepoint
-                info.codepoint = first_byte & ((1 << (7 - info.byte_count)) - 1);
+                info.codepoint = static_cast<uint32_t>(first_byte & ((1 << (7 - info.byte_count)) - 1));
                 for (std::size_t i = 1; i < info.byte_count; ++i) {
                     unsigned char byte = static_cast<unsigned char>(input[pos + i]);
                     if ((byte & 0xC0) != 0x80) {
@@ -342,7 +342,7 @@ inline CharInfo extract_char_info(const std::string& input, std::size_t pos, boo
         } else {
             // No validation, assume the UTF-8 is correct and extract codepoint optimistically
             if (pos + info.byte_count <= input.length()) {
-                info.codepoint = first_byte & ((1 << (7 - info.byte_count)) - 1);
+                info.codepoint = static_cast<uint32_t>(first_byte & ((1 << (7 - info.byte_count)) - 1));
                 for (std::size_t i = 1; i < info.byte_count; ++i) {
                     unsigned char byte = static_cast<unsigned char>(input[pos + i]);
                     info.codepoint = (info.codepoint << 6) | (byte & 0x3F);

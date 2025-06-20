@@ -35,8 +35,8 @@ bool test_module1_basic_utf8_handling() {
     std::string case_test = "AbCdEf";
     auto range = u8scan::make_char_range(case_test);
     
-    int lowercase_count = std::count_if(range.begin(), range.end(), u8scan::predicates::is_lowercase_ascii());
-    int uppercase_count = std::count_if(range.begin(), range.end(), u8scan::predicates::is_uppercase_ascii());
+    int lowercase_count = static_cast<int>(std::count_if(range.begin(), range.end(), u8scan::predicates::is_lowercase_ascii()));
+    int uppercase_count = static_cast<int>(std::count_if(range.begin(), range.end(), u8scan::predicates::is_uppercase_ascii()));
     
     assert(lowercase_count == 3);  // b, d, f
     assert(uppercase_count == 3);  // A, C, E
@@ -106,7 +106,7 @@ std::string module1_process_utf8() {
     
     // Count lowercase letters using the new predicate
     auto char_range = u8scan::make_char_range(ascii_input);
-    int lowercase_count = std::count_if(char_range.begin(), char_range.end(), u8scan::predicates::is_lowercase_ascii());
+    int lowercase_count = static_cast<int>(std::count_if(char_range.begin(), char_range.end(), u8scan::predicates::is_lowercase_ascii()));
     result += "\nLowercase letters count (using predicate): " + std::to_string(lowercase_count) + "\n";
     
     // Extract only lowercase letters

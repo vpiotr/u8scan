@@ -11,7 +11,7 @@ UTEST_FUNC_DEF2(U8ScanEmoji, BasicEmojiDetection) {
     std::string input = "Hello 🌍 World 🚀!";
     auto range = make_char_range(input);
     
-    int emoji_count = std::count_if(range.begin(), range.end(), predicates::is_emoji());
+    int emoji_count = static_cast<int>(std::count_if(range.begin(), range.end(), predicates::is_emoji()));
     UTEST_ASSERT_EQUALS(2, emoji_count);  // 🌍 and 🚀
     
     // Find specific emojis
@@ -58,7 +58,7 @@ UTEST_FUNC_DEF2(U8ScanEmoji, CommonEmojiSymbols) {
     
     for (const auto& symbol : emoji_symbols) {
         auto range = make_char_range(symbol);
-        int emoji_count = std::count_if(range.begin(), range.end(), predicates::is_emoji());
+        int emoji_count = static_cast<int>(std::count_if(range.begin(), range.end(), predicates::is_emoji()));
         UTEST_ASSERT_TRUE(emoji_count >= 1);  // At least one emoji component
     }
 }
@@ -127,7 +127,7 @@ UTEST_FUNC_DEF2(U8ScanEmoji, Flags) {
         auto range = make_char_range(flag);
         // Flags are sequences of Regional Indicator Symbols
         // Each flag consists of two regional indicator characters
-        int emoji_count = std::count_if(range.begin(), range.end(), predicates::is_emoji());
+        int emoji_count = static_cast<int>(std::count_if(range.begin(), range.end(), predicates::is_emoji()));
         UTEST_ASSERT_TRUE(emoji_count >= 1);  // At least one emoji component
     }
 }
@@ -147,7 +147,7 @@ UTEST_FUNC_DEF2(U8ScanEmoji, Transport) {
         
         // Some transport emojis might be followed by variation selectors
         // Count total emoji characters in the sequence
-        int emoji_count = std::count_if(range.begin(), range.end(), predicates::is_emoji());
+        int emoji_count = static_cast<int>(std::count_if(range.begin(), range.end(), predicates::is_emoji()));
         UTEST_ASSERT_TRUE(emoji_count >= 1);
     }
 }
@@ -185,7 +185,7 @@ UTEST_FUNC_DEF2(U8ScanEmoji, MiscellaneousSymbols) {
         UTEST_ASSERT_TRUE(it != range.end());
         
         // Count emoji characters (some might have variation selectors)
-        int emoji_count = std::count_if(range.begin(), range.end(), predicates::is_emoji());
+        int emoji_count = static_cast<int>(std::count_if(range.begin(), range.end(), predicates::is_emoji()));
         UTEST_ASSERT_TRUE(emoji_count >= 1);
     }
 }
@@ -238,19 +238,19 @@ UTEST_FUNC_DEF2(U8ScanEmoji, EdgeCases) {
     // Test empty string
     std::string empty = "";
     auto range = make_char_range(empty);
-    int emoji_count = std::count_if(range.begin(), range.end(), predicates::is_emoji());
+    int emoji_count = static_cast<int>(std::count_if(range.begin(), range.end(), predicates::is_emoji()));
     UTEST_ASSERT_EQUALS(0, emoji_count);
     
     // Test ASCII only
     std::string ascii_only = "Hello World 123!";
     auto ascii_range = make_char_range(ascii_only);
-    int ascii_emoji_count = std::count_if(ascii_range.begin(), ascii_range.end(), predicates::is_emoji());
+    int ascii_emoji_count = static_cast<int>(std::count_if(ascii_range.begin(), ascii_range.end(), predicates::is_emoji()));
     UTEST_ASSERT_EQUALS(0, ascii_emoji_count);
     
     // Test mixed content
     std::string mixed = "Hello 🌍 World 123 🚀 Test!";
     auto mixed_range = make_char_range(mixed);
-    int mixed_emoji_count = std::count_if(mixed_range.begin(), mixed_range.end(), predicates::is_emoji());
+    int mixed_emoji_count = static_cast<int>(std::count_if(mixed_range.begin(), mixed_range.end(), predicates::is_emoji()));
     UTEST_ASSERT_EQUALS(2, mixed_emoji_count);
 }
 
