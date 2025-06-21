@@ -93,13 +93,13 @@ int main() {
 
 ## Why U8SCAN?
 
-- 🚀 **Header-only** - Just include `u8scan.h` and start using
-- 📦 **Zero dependencies** - Works with standard C++ library only
-- 🔧 **Highly customizable** - Custom character processing functions
-- 🎯 **STL-compatible** - Works seamlessly with standard algorithms
-- 🛡️ **UTF-8 safe** - Properly handles multi-byte characters and validation
-- ✅ **Well tested** - Comprehensive test suite included
-- ⚡ **Performance-focused** - Separate optimized paths for ASCII and UTF-8
+- **Header-only** - Just include `u8scan.h` and start using
+- **Zero dependencies** - Works with standard C++ library only
+- **Highly customizable** - Custom character processing functions
+- **STL-compatible** - Works seamlessly with standard algorithms
+- **UTF-8 safe** - Properly handles multi-byte characters and validation
+- **Well tested** - Comprehensive test suite included
+- **Performance-focused** - Separate optimized paths for ASCII and UTF-8
 
 ## Quick Start
 
@@ -696,6 +696,7 @@ cd build && ctest
 ./build/bin/u8scan_stl_test
 ./build/bin/u8scan_copy_test
 ./build/bin/u8scan_emoji_test
+./build/bin/u8scan_access_test
 ```
 
 ### Running Demos
@@ -707,6 +708,7 @@ cd build && ctest
 # Or run directly
 ./build/bin/u8scan_scanning_demo
 ./build/bin/u8scan_stl_demo
+./build/bin/u8scan_access_demo
 ```
 
 ### Build Options
@@ -750,16 +752,18 @@ u8scan/
 │   ├── u8scan_scanning_test.cpp # Scanning functionality tests
 │   ├── u8scan_stl_test.cpp      # STL integration tests
 │   ├── u8scan_copy_test.cpp     # Copy functions tests
-│   └── u8scan_emoji_test.cpp    # Emoji detection tests
+│   ├── u8scan_emoji_test.cpp    # Emoji detection tests
+│   └── u8scan_access_test.cpp   # String access functions tests
 ├── demos/
 │   ├── u8scan_scanning_demo.cpp # Basic scanning examples
 │   ├── u8scan_stl_demo.cpp      # STL algorithm examples
+│   ├── u8scan_access_demo.cpp   # String access functions demo
 │   └── multi_module/            # Multi-module project demo
 ├── docs/                        # Documentation (Doxygen)
 ├── cmake/                       # CMake configuration files
 ├── build/                       # Build output directory
 ├── CMakeLists.txt              # Main CMake configuration
-├── rebuild.sh                  # Build script
+├── rebuild.sh                  # Rebuild script
 ├── run_tests.sh               # Test runner script
 ├── run_demos.sh               # Demo runner script
 └── README.md                  # This file

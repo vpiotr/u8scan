@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# U8SCAN CMake Build Script
-# ========================
-# This script builds the U8SCAN project using CMake
+# U8SCAN CMake Rebuild Script
+# ===========================
+# This script rebuilds the U8SCAN project using CMake (clean build)
 
 set -e  # Exit on any error
 
@@ -17,8 +17,8 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$SCRIPT_DIR"
 
-echo -e "${BLUE}U8SCAN CMake Build Script${NC}"
-echo -e "${BLUE}=========================${NC}"
+echo -e "${BLUE}U8SCAN CMake Rebuild Script${NC}"
+echo -e "${BLUE}===========================${NC}"
 
 # Parse command line arguments
 BUILD_TYPE="Release"

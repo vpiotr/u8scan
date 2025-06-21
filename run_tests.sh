@@ -23,11 +23,11 @@ echo -e "${BLUE}===================${NC}"
 
 # Check if build directory exists
 if [ ! -d "$BUILD_DIR" ]; then
-    echo -e "${YELLOW}Build directory not found. Running build script...${NC}"
-    if [ -x "$PROJECT_ROOT/build.sh" ]; then
-        "$PROJECT_ROOT/build.sh"
+    echo -e "${YELLOW}Build directory not found. Running rebuild script...${NC}"
+    if [ -x "$PROJECT_ROOT/rebuild.sh" ]; then
+        "$PROJECT_ROOT/rebuild.sh"
     else
-        echo -e "${RED}Build script not found or not executable: $PROJECT_ROOT/build.sh${NC}"
+        echo -e "${RED}Rebuild script not found or not executable: $PROJECT_ROOT/rebuild.sh${NC}"
         exit 1
     fi
 fi
@@ -46,7 +46,7 @@ if [ ! -x "$U8SCAN_SCANNING_TEST_BIN" ] || [ ! -x "$U8SCAN_STL_TEST_BIN" ] || [ 
     [ ! -x "$U8SCAN_EMOJI_TEST_BIN" ] && echo -e "${RED}- $U8SCAN_EMOJI_TEST_BIN${NC}"
     [ ! -x "$U8SCAN_COPY_TEST_BIN" ] && echo -e "${RED}- $U8SCAN_COPY_TEST_BIN${NC}"
     [ ! -x "$U8SCAN_ACCESS_TEST_BIN" ] && echo -e "${RED}- $U8SCAN_ACCESS_TEST_BIN${NC}"
-    echo -e "${YELLOW}Try running the build script first: ./build.sh${NC}"
+    echo -e "${YELLOW}Try running the rebuild script first: ./rebuild.sh${NC}"
     exit 1
 fi
 

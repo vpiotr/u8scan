@@ -53,3 +53,5 @@ install_manifest.txt
 *.dmg
 
 docs/html/
+
+todo.md

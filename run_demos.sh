@@ -21,11 +21,11 @@ echo -e "${BLUE}===================${NC}"
 
 # Check if build directory exists
 if [ ! -d "$BUILD_DIR" ]; then
-    echo -e "${YELLOW}Build directory not found. Running build script...${NC}"
-    if [ -x "$PROJECT_ROOT/build.sh" ]; then
-        "$PROJECT_ROOT/build.sh"
+    echo -e "${YELLOW}Build directory not found. Running rebuild script...${NC}"
+    if [ -x "$PROJECT_ROOT/rebuild.sh" ]; then
+        "$PROJECT_ROOT/rebuild.sh"
     else
-        echo -e "${RED}Build script not found or not executable: $PROJECT_ROOT/build.sh${NC}"
+        echo -e "${RED}Rebuild script not found or not executable: $PROJECT_ROOT/rebuild.sh${NC}"
         exit 1
     fi
 fi
